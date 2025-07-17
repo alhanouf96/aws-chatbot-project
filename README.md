@@ -1,6 +1,2 @@
-# chatbot-project
-
-This is my chatbot project...
-## How to use it
-Run this command
-'steamily run main.py'
+📝 without-secrets Branch
+Credentials are managed locally using .env files (for testing and development purposes).
