@@ -27,37 +27,61 @@ load_dotenv()
 
 app = FastAPI()
 
-import logging
+def get_aws_secrets(secret_name, region_name="us-east-1"):
+    client = boto3.client("secretsmanager", region_name=region_name)
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+    try:
+        response = client.get_secret_value(SecretId=secret_name)
+    except ClientError as e:
+        raise e
 
-logger.info(f"AWS_STORAGE_BUCKET_NAME = {os.environ.get('AWS_STORAGE_BUCKET_NAME')}")
-logger.info(f"AWS_ACCESS_KEY_ID = {os.environ.get('AWS_ACCESS_KEY_ID')}")
+    secret_dict = json.loads(response['SecretString'])
+    return secret_dict
 
-# Database config
+
+# استخدام السر
+secret_name = os.environ.get("SECRET_NAME", "hanoufsecrets")
+secrets = get_aws_secrets(secret_name)
+
+DB_NAME = secrets['PROJ-DB-NAME']
+DB_USER = secrets['PROJ-DB-USER']
+DB_PASSWORD = secrets['PROJ-DB-PASSWORD']
+DB_HOST = secrets['PROJ-DB-HOST']
+DB_PORT = secrets['PROJ-DB-PORT']
+OPENAI_API_KEY = secrets['PROJ-OPENAI-API-KEY']
+AWS_ACCESS_KEY_ID = secrets['PROJ-AWS-ACCESS-KEY-ID']
+AWS_SECRET_ACCESS_KEY = secrets['PROJ-AWS-SECRET-ACCESS-KEY']
+AWS_STORAGE_BUCKET_NAME = secrets['PROJ-AWS-STORAGE-BUCKET-NAME']
+AWS_REGION = secrets['PROJ-AWS-REGION']
+
+print("OpenAI API KEY:", OPENAI_API_KEY)
+
 DB_CONFIG = {
-    "dbname": os.environ.get("DB_NAME"),
-    "user": os.environ.get("DB_USER"),
-    "password": os.environ.get("DB_PASSWORD"),
-    "host": os.environ.get("DB_HOST"),
-    "port": os.environ.get("DB_PORT"),
+    "dbname": DB_NAME,
+    "user": DB_USER,
+    "password": DB_PASSWORD,
+    "host": DB_HOST,
+    "port": DB_PORT,
 }
+OPENAI_API_KEY = secrets['PROJ-OPENAI-API-KEY']
 
-client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+# نفس أسلوبك القديم:
+client = OpenAI(api_key=OPENAI_API_KEY)
+
 model = "gpt-3.5-turbo"
-llm = ChatOpenAI(model=model)
 
-# ChromaDB setup
-embedding_function = OpenAIEmbeddings()
+llm = ChatOpenAI(model=model, api_key=OPENAI_API_KEY)
+
+# LangChain setup
+embedding_function = OpenAIEmbeddings(api_key=OPENAI_API_KEY)
 chroma_client = chromadb.HttpClient(host='localhost', port=8000)
 vectorstore = Chroma(client=chroma_client, collection_name="langchain", embedding_function=embedding_function)
 
 # S3 config
 s3 = boto3.client('s3')
-S3_BUCKET = os.environ.get("AWS_STORAGE_BUCKET_NAME")
+S3_BUCKET = AWS_STORAGE_BUCKET_NAME
 
-app = FastAPI()
+
 
 # Models
 class ChatRequest(BaseModel):
