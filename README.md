@@ -30,3 +30,6 @@ This project showcases a simple yet effective deployment on **AWS**, integrating
 
 ---
 
+🔒 This project is created and maintained by [@alhanouf96](https://github.com/alhanouf96).  
+Any use, copy, or redistribution must properly credit the original author.
+
