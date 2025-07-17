@@ -5,7 +5,7 @@ set -e  # Exit on any error
 date
 echo "Updating Python application on VM..."
 
-REPO_URL="alhanouf96/aws-chatbot-project"
+REPO_URL="alhanouf96/aws-chatbot-project.git"
 BRANCH="main"
 GITHUB_TOKEN=$TOKEN  # Passed securely via protectedSettings
 HOME_DIR=$(eval echo ~$USER)
