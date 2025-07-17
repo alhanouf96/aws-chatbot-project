@@ -1,4 +1,4 @@
-name: Python App CI/CD Pipeline for AWS EC2
+name: Python App CI/CD Pipeline with Direct Deployment
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -27,15 +27,16 @@ jobs:
       run: |
         echo "Run tests"
 
+    # 🔐 إعداد الاتصال بـ EC2 عن طريق SSH
     - name: Deploy to EC2 via SSH
-      uses: appleboy/ssh-action@v1.0.3
+      uses: appleboy/ssh-action@v1.0.0
       with:
         host: ${{ secrets.EC2_HOST }}
-        username: ubuntu
+        username: ubuntu  # أو ec2-user حسب نوع AMI
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
+          export GITHUB_TOKEN=${{ secrets.TOKEN }}
           cd /home/ubuntu/chatbot-project
           git pull origin main
-          source /home/ubuntu/miniconda3/bin/activate project
-          pip install -r requirements.txt
-          sudo systemctl restart chatbot.service
+          bash update_app.sh
+
